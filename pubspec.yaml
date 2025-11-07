@@ -1,0 +1,63 @@
+name: userlist
+description: "A new Flutter project."
+
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  #firebase_core:
+  firebase_core: ^2.24.2
+
+  #firebase_auth:
+  firebase_auth: ^4.15.3
+
+  #provider:
+  provider: ^6.1.1
+
+  #http:
+  http: ^1.1.2
+
+  #flutter_slidable:
+  flutter_slidable: ^3.0.1
+
+  #permission_handler:
+  permission_handler: ^11.0.1
+
+  #sim_card_info
+  sim_card_info: ^1.0.2
+
+  #country_code_picker
+  country_code_picker: ^3.4.1
+
+  #flutter_otp_text_field
+  flutter_otp_text_field: ^1.5.1+1
+  # google fonts
+  google_fonts: ^6.2.1
+
+  #shared_preferences
+  shared_preferences: ^2.1.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+
+  flutter_lints: ^5.0.0
+
+
+flutter:
+
+  uses-material-design: true
+
+

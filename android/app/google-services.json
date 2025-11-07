@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "496308643609",
+    "project_id": "userlist-app-2024",
+    "storage_bucket": "userlist-app-2024.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:496308643609:android:1089d74cd8422dc87d0788",
+        "android_client_info": {
+          "package_name": "com.example.userlist"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCaiv2ZogBrBdgDQ2OMsNqX2o2AtxccXrk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
