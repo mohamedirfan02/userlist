@@ -1,11 +1,9 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:userlist/viewmodels/auth_viewmodel.dart';
 import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 
-/// A screen that allows users to log in using their phone number.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
@@ -17,7 +15,7 @@ class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
-  String _selectedCountryCode = '+91'; // default India
+  String _selectedCountryCode = '+91';
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -26,8 +24,6 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   void initState() {
     super.initState();
-
-    // Initialize animations
     _animationController =
         AnimationController(vsync: this, duration: const Duration(seconds: 2));
     _fadeAnimation =
@@ -35,10 +31,8 @@ class _LoginScreenState extends State<LoginScreen>
     _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
     );
-
     _animationController.forward();
 
-    // Fetches the SIM phone number after the first frame.
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final auth = Provider.of<AuthViewModel>(context, listen: false);
       await auth.fetchSimPhoneNumber();
@@ -68,7 +62,6 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
-  /// A helper method to validate the phone number.
   String? _validatePhone(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter your phone number';
@@ -76,23 +69,23 @@ class _LoginScreenState extends State<LoginScreen>
     return null;
   }
 
-  /// Submits the phone number to get an OTP.
   void _submitPhone() {
     if (_formKey.currentState!.validate()) {
       String phone = _phoneController.text.trim();
-
       if (phone.startsWith(_selectedCountryCode)) {
         phone = phone.replaceFirst(_selectedCountryCode, '');
       }
-
       final fullPhone = '$_selectedCountryCode$phone';
       debugPrint('📞 Sending phone: $fullPhone');
+
+      // Tell view model about phone number (so it can persist after OTP success)
+      final authVM = Provider.of<AuthViewModel>(context, listen: false);
+      authVM.setPhoneNumber(fullPhone);
 
       _showOTPDialog(context, fullPhone);
     }
   }
 
-  /// Shows a dialog for entering the OTP.
   void _showOTPDialog(BuildContext context, String fullPhone) {
     String enteredOTP = '';
 
@@ -101,17 +94,14 @@ class _LoginScreenState extends State<LoginScreen>
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
         final size = MediaQuery.of(dialogContext).size;
-        final screenWidth = size.width;
-        final dialogWidth = screenWidth * 0.9;
+        final dialogWidth = size.width * 0.9;
 
         return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           backgroundColor: Colors.white,
           insetPadding: const EdgeInsets.symmetric(horizontal: 20),
           titlePadding: const EdgeInsets.all(16),
-
           title: Row(
             children: const [
               Icon(Icons.lock_outline, color: Colors.blueAccent, size: 26),
@@ -119,15 +109,11 @@ class _LoginScreenState extends State<LoginScreen>
               Flexible(
                 child: Text(
                   'OTP Verification',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-              ),
+              )
             ],
           ),
-
           content: SingleChildScrollView(
             child: SizedBox(
               width: dialogWidth,
@@ -140,7 +126,6 @@ class _LoginScreenState extends State<LoginScreen>
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
-
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
@@ -157,13 +142,10 @@ class _LoginScreenState extends State<LoginScreen>
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 25),
-
                   LayoutBuilder(
                     builder: (context, constraints) {
-                      final fieldWidth =
-                          (constraints.maxWidth - 50) / 6; 
+                      final fieldWidth = (constraints.maxWidth - 50) / 6;
                       return OtpTextField(
                         numberOfFields: 6,
                         fieldWidth: fieldWidth,
@@ -182,7 +164,6 @@ class _LoginScreenState extends State<LoginScreen>
                       );
                     },
                   ),
-
                   const SizedBox(height: 10),
                   const Text(
                     'Please enter the 6-digit code to verify',
@@ -192,8 +173,8 @@ class _LoginScreenState extends State<LoginScreen>
               ),
             ),
           ),
-
-          actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          actionsPadding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           actionsAlignment: MainAxisAlignment.spaceBetween,
           actions: [
             TextButton(
@@ -206,15 +187,18 @@ class _LoginScreenState extends State<LoginScreen>
               ),
               child: const Text('Cancel'),
             ),
-
             ElevatedButton.icon(
               onPressed: () async {
-                final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
-                final success = await authViewModel.verifyOtp(enteredOTP);
+                final authVM =
+                Provider.of<AuthViewModel>(context, listen: false);
+                final success = await authVM.verifyOtp(enteredOTP);
 
                 if (success) {
                   Navigator.pop(dialogContext);
-                  Navigator.pushReplacementNamed(context, '/address-list');
+                  // route to address list
+                  if (context.mounted) {
+                    Navigator.pushReplacementNamed(context, '/address-list');
+                  }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -233,14 +217,13 @@ class _LoginScreenState extends State<LoginScreen>
                 padding:
                 const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
+                    borderRadius: BorderRadius.circular(10)),
                 textStyle: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-            ),
+            )
           ],
         );
       },
@@ -269,11 +252,8 @@ class _LoginScreenState extends State<LoginScreen>
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 40),
-
-                /// Animated Logo
                 ScaleTransition(
                   scale: _scaleAnimation,
                   child: Container(
@@ -289,10 +269,7 @@ class _LoginScreenState extends State<LoginScreen>
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 25),
-
-                /// Title
                 FadeTransition(
                   opacity: _fadeAnimation,
                   child: const Text(
@@ -301,23 +278,10 @@ class _LoginScreenState extends State<LoginScreen>
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
-                      letterSpacing: 1.1,
                     ),
                   ),
                 ),
-
-                const SizedBox(height: 8),
-                FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: const Text(
-                    'Smart way to manage your addresses',
-                    style: TextStyle(fontSize: 15, color: Colors.white70),
-                  ),
-                ),
-
                 const SizedBox(height: 50),
-
-                /// Login Card
                 FadeTransition(
                   opacity: _fadeAnimation,
                   child: Container(
@@ -326,13 +290,6 @@ class _LoginScreenState extends State<LoginScreen>
                       color: Colors.white.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: Colors.white.withOpacity(0.3)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
-                          blurRadius: 10,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
                     ),
                     child: Form(
                       key: _formKey,
@@ -347,27 +304,18 @@ class _LoginScreenState extends State<LoginScreen>
                                 decoration: BoxDecoration(
                                   color: Colors.white.withOpacity(0.08),
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                      color: Colors.white.withOpacity(0.4)),
                                 ),
                                 child: CountryCodePicker(
                                   onChanged: (code) {
-                                    setState(() =>
-                                    _selectedCountryCode = code.dialCode!);
+                                    setState(
+                                            () => _selectedCountryCode = code.dialCode!);
                                   },
                                   initialSelection: _selectedCountryCode,
                                   favorite: const ['+91', 'IN', '+1', 'US'],
                                   showFlag: true,
                                   padding: EdgeInsets.zero,
-                                  showCountryOnly: false,
-                                  alignLeft: false,
                                   textStyle: const TextStyle(
                                       color: Colors.white, fontSize: 16),
-                                  dialogTextStyle:
-                                  const TextStyle(color: Colors.black),
-                                  searchDecoration: const InputDecoration(
-                                    hintText: 'Search country',
-                                  ),
                                 ),
                               ),
                               const SizedBox(width: 10),
@@ -377,23 +325,15 @@ class _LoginScreenState extends State<LoginScreen>
                                   keyboardType: TextInputType.phone,
                                   style: const TextStyle(color: Colors.white),
                                   decoration: InputDecoration(
-                                    counterText: '',
                                     labelText: 'Phone Number',
                                     labelStyle:
                                     const TextStyle(color: Colors.white70),
                                     filled: true,
-                                    fillColor:
-                                    Colors.white.withOpacity(0.05),
+                                    fillColor: Colors.white.withOpacity(0.05),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: BorderSide(
-                                          color:
-                                          Colors.white.withOpacity(0.4)),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(
-                                          color: Colors.white),
+                                          color: Colors.white.withOpacity(0.4)),
                                     ),
                                   ),
                                   validator: _validatePhone,
@@ -414,9 +354,8 @@ class _LoginScreenState extends State<LoginScreen>
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: authProvider.isLoading
-                                  ? null
-                                  : _submitPhone,
+                              onPressed:
+                              authProvider.isLoading ? null : _submitPhone,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white,
                                 foregroundColor: const Color(0xFF0072ff),
@@ -425,7 +364,6 @@ class _LoginScreenState extends State<LoginScreen>
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                elevation: 3,
                               ),
                               child: authProvider.isLoading
                                   ? const SizedBox(
@@ -449,18 +387,12 @@ class _LoginScreenState extends State<LoginScreen>
                     ),
                   ),
                 ),
-
-                const SizedBox(height: 24),
-
+                const SizedBox(height: 16),
                 FadeTransition(
                   opacity: _fadeAnimation,
                   child: const Text(
                     'Note: For testing, use OTP: 123456',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.white70,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: TextStyle(fontSize: 13, color: Colors.white70),
                   ),
                 ),
               ],

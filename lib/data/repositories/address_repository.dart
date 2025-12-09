@@ -1,21 +1,14 @@
-
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../../models/address_model.dart';
+import 'package:userlist/core/constant/app_api_constants.dart';
+import 'package:userlist/models/address_model.dart';
 
-/// [AddressRepository] is responsible for handling all the data operations
-/// related to addresses. It abstracts the data source from the rest of the app.
+/// Handles API requests for addresses.
+/// Now uses centralized API constants from [AppApiConstants].
 class AddressRepository {
-  /// The base URL for the address API.
-  static const String BASE_URL =
-      'https://690c70dfa6d92d83e84dc0a3.mockapi.io/api/users/users';
-
-  /// Fetches a list of addresses from the API.
-  ///
-  /// Returns a list of [Address] objects.
-  /// Throws an exception if the request fails.
+  /// Fetch all addresses
   Future<List<Address>> fetchAddresses() async {
-    final response = await http.get(Uri.parse(BASE_URL));
+    final response = await http.get(Uri.parse(AppApiConstants.addressesEndpoint));
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
@@ -25,13 +18,10 @@ class AddressRepository {
     }
   }
 
-  /// Adds a new address to the API.
-  ///
-  /// Takes an [Address] object as input and returns the newly created address.
-  /// Throws an exception if the request fails.
+  /// Add a new address
   Future<Address> addAddress(Address address) async {
     final response = await http.post(
-      Uri.parse(BASE_URL),
+      Uri.parse(AppApiConstants.addressesEndpoint),
       headers: {'Content-Type': 'application/json'},
       body: json.encode(address.toJson()),
     );
@@ -44,13 +34,10 @@ class AddressRepository {
     }
   }
 
-  /// Updates an existing address in the API.
-  ///
-  /// Takes an [Address] object as input.
-  /// Throws an exception if the request fails.
+  /// Update an address
   Future<void> updateAddress(Address address) async {
     final response = await http.put(
-      Uri.parse('$BASE_URL/${address.id}'),
+      Uri.parse('${AppApiConstants.addressesEndpoint}/${address.id}'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode(address.toJson()),
     );
@@ -60,15 +47,14 @@ class AddressRepository {
     }
   }
 
-  /// Deletes an address from the API.
-  ///
-  /// Takes the ID of the address to delete.
-  /// Throws an exception if the request fails.
+  /// Delete an address
   Future<void> deleteAddress(String id) async {
-    final response = await http.delete(Uri.parse('$BASE_URL/$id'));
+    final response = await http.delete(
+      Uri.parse('${AppApiConstants.addressesEndpoint}/$id'),
+    );
 
     if (response.statusCode != 200) {
-      throw Exception('Failed to delete address (code: ${response.statusCode})');
+      throw Exception('Failed to delete address (Code: ${response.statusCode})');
     }
   }
 }

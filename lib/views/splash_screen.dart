@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:userlist/core/constant/app_hive_storage_constants.dart';
 import 'login_screen.dart';
 
 /// The splash screen of the application.
@@ -19,6 +21,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
+    _navigate();
 
     // Initialize the animation controller.
     _controller = AnimationController(
@@ -40,22 +43,25 @@ class _SplashScreenState extends State<SplashScreen>
     // Start the animation.
     _controller.forward();
 
-    // Navigate to the LoginScreen after a delay.
-    Timer(const Duration(seconds: 3), () {
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const LoginScreen(),
-          transitionsBuilder: (_, animation, __, child) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
-          },
-          transitionDuration: const Duration(milliseconds: 800),
-        ),
-      );
-    });
+  }
+
+  Future<void> _navigate() async {
+
+    await Future.delayed(const Duration(seconds: 2)); // just for animation/demo
+
+    final authBox = Hive.box(AppHiveStorageConstants.authBoxKey);
+    final isLoggedIn =
+    authBox.get(AppHiveStorageConstants.isAuthLoggedInStatus, defaultValue: false);
+
+    if (isLoggedIn) {
+      Navigator.pushReplacementNamed(context, '/address-list');
+    } else {
+      Navigator.pushReplacementNamed(context, '/login');
+    }
+    print('Hive login: ${authBox.get(AppHiveStorageConstants.isAuthLoggedInStatus)}');
+    print('Hive phone: ${authBox.get(AppHiveStorageConstants.userPhoneNumber)}');
+
+
   }
 
   @override

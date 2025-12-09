@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
+import 'package:userlist/comman/widgets/address_list_shimmer.dart';
 import 'package:userlist/models/address_model.dart';
 import 'package:userlist/viewmodels/address_viewmodel.dart';
 import 'package:userlist/viewmodels/auth_viewmodel.dart';
@@ -141,14 +142,13 @@ class _AddressListScreenState extends State<AddressListScreen> {
         body: SafeArea(
           child: RefreshIndicator(
             onRefresh: () => addressViewModel.fetchAddresses(),
-            child: addressViewModel.isLoading &&
-                addressViewModel.addresses.isEmpty
-                ? const Center(child: CircularProgressIndicator())
+            child: addressViewModel.isLoading && addressViewModel.addresses.isEmpty
+                ? const AddressListShimmer() // 👈 shimmer added here
                 : addressViewModel.addresses.isEmpty
                 ? _buildEmptyState(context)
                 : ListView.builder(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 8),
+              padding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               itemCount: addressViewModel.addresses.length,
               itemBuilder: (context, index) {
                 Address address = addressViewModel.addresses[index];
@@ -157,6 +157,7 @@ class _AddressListScreenState extends State<AddressListScreen> {
             ),
           ),
         ),
+
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () => Navigator.pushNamed(context, '/add-address'),
           icon: const Icon(Icons.add),

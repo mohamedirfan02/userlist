@@ -1,5 +1,9 @@
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:userlist/core/constant/app_hive_storage_constants.dart';
 import '../data/repositories/address_repository.dart';
 import '../models/address_model.dart';
 
@@ -9,6 +13,7 @@ import '../models/address_model.dart';
 /// and notifies listeners of any state changes.
 class AddressViewModel with ChangeNotifier {
   final AddressRepository _addressRepository = AddressRepository();
+  final _addressBox = Hive.box(AppHiveStorageConstants.addressBoxKey);
 
   // State properties
   List<Address> _addresses = [];
@@ -28,8 +33,17 @@ class AddressViewModel with ChangeNotifier {
     _setLoading(true);
     try {
       _addresses = await _addressRepository.fetchAddresses();
+      // ✅ Save locally for offline use
+      final jsonList = _addresses.map((a) => a.toJson()).toList();
+      await _addressBox.put(AppHiveStorageConstants.addressListKey, jsonEncode(jsonList));
     } catch (e) {
       _errorMessage = e.toString();
+      // ✅ Load from cache if API fails
+      final cached = _addressBox.get(AppHiveStorageConstants.addressListKey);
+      if (cached != null) {
+        final List decoded = jsonDecode(cached);
+        _addresses = decoded.map((e) => Address.fromJson(e)).toList();
+      }
     }
     _setLoading(false);
   }

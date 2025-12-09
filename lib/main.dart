@@ -2,7 +2,10 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'package:provider/provider.dart';
+import 'package:userlist/core/constant/app_hive_storage_constants.dart';
 import 'package:userlist/data/repositories/auth_repository.dart';
 import 'package:userlist/models/address_model.dart';
 import 'package:userlist/views/address_detail_screen.dart';
@@ -31,6 +34,13 @@ void main() async {
     print('Firebase initialization skipped: $e');
   }
 
+  // ✅ Initialize Hive
+  await Hive.initFlutter();
+
+  // ✅ Open boxes before app starts
+  await Hive.openBox(AppHiveStorageConstants.authBoxKey);
+  await Hive.openBox(AppHiveStorageConstants.addressBoxKey);
+
   runApp(const MyApp());
 }
 
@@ -45,7 +55,11 @@ class MyApp extends StatelessWidget {
       providers: [
         // Provides the [AuthViewModel] to the widget tree.
         ChangeNotifierProvider(
-          create: (_) => AuthViewModel(AuthRepository()),
+          create: (_) {
+            final vm = AuthViewModel(AuthRepository());
+            vm.initAuthState(); // ✅ Load stored state from Hive
+            return vm;
+          },
         ),
         // Provides the [AddressViewModel] to the widget tree.
         ChangeNotifierProvider(create: (_) => AddressViewModel()),
